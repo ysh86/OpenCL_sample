@@ -8,6 +8,9 @@
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
+#include <string>
+#include <fstream>
+#include <streambuf>
 
 const size_t ch = 4;
 const size_t width = 1024;
@@ -16,27 +19,8 @@ const size_t height = 1024 * 2;
 const cl::NDRange kernelRangeGlobal(width, height);
 const cl::NDRange kernelRangeLocal(32,8);
 
+#define kernelFile "../hello.cl"
 #define kernelName "hello"
-const char * kernelStr  = ""
-"__kernel void " kernelName "("
-"    __global const unsigned int *a,"
-"    __global const unsigned int *b,"
-"    __global unsigned int *c"
-")"
-"{"
-"    size_t gid = get_global_id(1) * 1024 + get_global_id(0);"
-"    /*size_t gid = mad24(get_global_id(1), (size_t)1024, get_global_id(0));*/"
-""
-"    uint temp_a = a[gid];"
-"    uint temp_b = b[gid];"
-"    uint temp_c;"
-"    temp_c  = ((temp_a & 0x000000FF) + (temp_b & 0x000000FF)) & 0x000000FF;"
-"    temp_c |= ((temp_a & 0x0000FF00) + (temp_b & 0x0000FF00)) & 0x0000FF00;"
-"    temp_c |= ((temp_a & 0x00FF0000) + (temp_b & 0x00FF0000)) & 0x00FF0000;"
-"    temp_c |= ((temp_a & 0xFF000000) + (temp_b & 0xFF000000)) & 0xFF000000;"
-""
-"    c[gid] = temp_c;"
-"}";
 
 int
 main(void)
@@ -49,8 +33,8 @@ main(void)
         std::cout << "=======================================" << std::endl;
         std::vector<cl::Platform> platforms;
         err |= cl::Platform::get(&platforms);
-        int n = platforms.size();
-        for (int i = 0; i < n; i++) {
+        size_t n = platforms.size();
+        for (size_t i = 0; i < n; i++) {
             std::cout << i << std::endl;
             std::cout << "---------------------------------------" << std::endl;
 
@@ -87,8 +71,8 @@ main(void)
         std::cout << "Device" << std::endl;
         std::cout << "=======================================" << std::endl;
         std::vector<cl::Device> devices = context.getInfo<CL_CONTEXT_DEVICES>();
-        int n_dev = devices.size();
-        for (int i = 0; i < n_dev; i++) {
+        size_t n_dev = devices.size();
+        for (size_t i = 0; i < n_dev; i++) {
             std::cout << i << std::endl;
             std::cout << "---------------------------------------" << std::endl;
 
@@ -111,9 +95,13 @@ main(void)
 
         // Build
         // --------------------------------------------
+        std::ifstream from(kernelFile);
+        std::string kernelStr((std::istreambuf_iterator<char>(from)),
+                               std::istreambuf_iterator<char>());
+        from.close();
         cl::Program::Sources sources(
             1,
-            std::make_pair(kernelStr, strlen(kernelStr))
+            std::make_pair(kernelStr.c_str(), kernelStr.length())
         );
         cl::Program program_ = cl::Program(context, sources);
         err |= program_.build(devices);
