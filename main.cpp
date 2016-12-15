@@ -12,8 +12,8 @@ const size_t ch = 4;
 const size_t width = 1024;
 const size_t height = 1024 * 2;
 
-const cl::NDRange kernelRangeGlobal(width, height);
-const cl::NDRange kernelRangeLocal(512,1);
+const cl::NDRange kernelRangeGlobal(width * height, 1);
+const cl::NDRange kernelRangeLocal(256,1);
 
 #define kernelFile "../hello.cl"
 #define kernelName "hello"
@@ -117,6 +117,18 @@ main(void)
             devices[0],
             CL_QUEUE_PROFILING_ENABLE, //0,
             &err);
+
+        // warm up
+        for (int i = 0; i < 15; ++i) {
+            err |= queue.enqueueNDRangeKernel(
+                kernel,
+                cl::NullRange,
+                kernelRangeGlobal,
+                kernelRangeLocal,
+                NULL,
+                NULL);
+        }
+        cl::finish();
 
         cl::Event event;
         err |= queue.enqueueNDRangeKernel(
