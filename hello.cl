@@ -4,8 +4,12 @@ __kernel void hello(
     __global unsigned int *c
 )
 {
+#if 0
     size_t gid = get_global_id(1) * 1024 + get_global_id(0);
     //size_t gid = mad24(get_global_id(1), (size_t)1024, get_global_id(0));
+#else
+    size_t gid = get_global_id(0);
+#endif
 
     uint temp_a = a[gid];
     uint temp_b = b[gid];

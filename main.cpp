@@ -1,10 +1,6 @@
 #define __CL_ENABLE_EXCEPTIONS
 
-#if defined(__APPLE__) || defined(__MACOSX)
-#include <OpenCL/cl.hpp>
-#else
 #include <CL/cl.hpp>
-#endif
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
@@ -17,7 +13,7 @@ const size_t width = 1024;
 const size_t height = 1024 * 2;
 
 const cl::NDRange kernelRangeGlobal(width, height);
-const cl::NDRange kernelRangeLocal(32,8);
+const cl::NDRange kernelRangeLocal(512,1);
 
 #define kernelFile "../hello.cl"
 #define kernelName "hello"
