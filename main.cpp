@@ -1,5 +1,13 @@
-#define __CL_ENABLE_EXCEPTIONS
+/*
+x86_64-w64-mingw32-g++ -Wall -Werror --std=c++11 -O3 -msse2 \
+-o hello.exe ../main.cpp \
+-I${HOME}/SDKs/OpenCL-Headers -I${HOME}/SDKs/OpenCL-CLHPP/build/include \
+/mnt/c/Windows/System32/OpenCL.DLL \
+-static -lstdc++ -lgcc
+*/
 
+#define __CL_ENABLE_EXCEPTIONS
+#define CL_TARGET_OPENCL_VERSION 120
 #include <CL/cl.hpp>
 #include <cstdio>
 #include <cstdlib>
@@ -52,21 +60,16 @@ main(void)
             std::cout << "Platform size 0\n";
             return -1;
         }
+        size_t i = 0;
+        cl::Platform &plat = platforms[i];
 
-        // Context
-        // --------------------------------------------
-        cl_context_properties properties[] = {
-            CL_CONTEXT_PLATFORM,
-            (cl_context_properties)(platforms[0])(),
-            0
-        };
-        cl::Context context(CL_DEVICE_TYPE_GPU, properties); 
 
-        // Device
+        // Device & Context
         // --------------------------------------------
         std::cout << "Device" << std::endl;
         std::cout << "=======================================" << std::endl;
-        std::vector<cl::Device> devices = context.getInfo<CL_CONTEXT_DEVICES>();
+        std::vector<cl::Device> devices;
+        err |= plat.getDevices(CL_DEVICE_TYPE_ALL, &devices);
         size_t n_dev = devices.size();
         for (size_t i = 0; i < n_dev; i++) {
             std::cout << i << std::endl;
@@ -89,6 +92,11 @@ main(void)
             }
         }
 
+        i = 0;
+        cl::Device &device = devices[i];
+        // Context
+        cl::Context context(device);
+
         // Build
         // --------------------------------------------
         std::ifstream from(kernelFile);
@@ -99,9 +107,9 @@ main(void)
             1,
             std::make_pair(kernelStr.c_str(), kernelStr.length())
         );
-        cl::Program program_ = cl::Program(context, sources);
-        err |= program_.build(devices);
-        cl::Kernel kernel(program_, kernelName, &err);
+        cl::Program program = cl::Program(context, sources);
+        err |= program.build("");
+        cl::Kernel kernel(program, kernelName, &err);
 
         // Execution
         // --------------------------------------------
@@ -114,7 +122,7 @@ main(void)
 
         cl::CommandQueue queue(
             context,
-            devices[0],
+            device,
             CL_QUEUE_PROFILING_ENABLE, //0,
             &err);
 
