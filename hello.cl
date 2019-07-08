@@ -1,4 +1,10 @@
+#define DO_FLOAT8 0
+
+#if DO_FLOAT8
+typedef float8 my4_t;
+#else
 typedef float4 my4_t;
+#endif
 
 #define MAD_4(x, y)     x = mad(y, x, y);   y = mad(x, y, x);   x = mad(y, x, y);   y = mad(x, y, x);
 #define MAD_16(x, y)    MAD_4(x, y);        MAD_4(x, y);        MAD_4(x, y);        MAD_4(x, y);
@@ -30,6 +36,32 @@ __kernel void hello(
 
     c[gid] = temp_c;
 #else
+#if DO_FLOAT8
+    my4_t temp_a = {
+        get_local_id(0)+0, get_local_id(0)+1, get_local_id(0)+2, get_local_id(0)+3,
+        get_local_id(0)+4, get_local_id(0)+5, get_local_id(0)+6, get_local_id(0)+7,
+    };
+    my4_t temp_0 = {
+        get_global_id(0)+0, get_global_id(0)+1, get_global_id(0)+2, get_global_id(0)+3,
+        get_global_id(0)+4, get_global_id(0)+5, get_global_id(0)+6, get_global_id(0)+7,
+    };
+
+    MAD_64(temp_a, temp_0);
+    MAD_64(temp_a, temp_0);
+    MAD_64(temp_a, temp_0);
+    MAD_64(temp_a, temp_0);
+    MAD_64(temp_a, temp_0);
+    MAD_64(temp_a, temp_0);
+    MAD_64(temp_a, temp_0);
+    MAD_64(temp_a, temp_0);
+
+    c[gid] = (unsigned int)(
+        temp_0.s0 + temp_0.s1 + temp_0.s2 + temp_0.s3 +
+        temp_a.s0 + temp_a.s1 + temp_a.s2 + temp_a.s3 +
+        temp_0.s4 + temp_0.s5 + temp_0.s6 + temp_0.s7 +
+        temp_a.s4 + temp_a.s5 + temp_a.s6 + temp_a.s7
+    );
+#else
     my4_t temp_a = {get_local_id(0), get_local_id(0)+1, get_local_id(0)+2, get_local_id(0)+3};
     my4_t temp_0 = {get_global_id(0), get_global_id(0)+1, get_global_id(0)+2, get_global_id(0)+3};
 
@@ -51,5 +83,6 @@ __kernel void hello(
     MAD_64(temp_a, temp_0);
 
     c[gid] = temp_0.s0 + temp_0.s1 + temp_0.s2 + temp_0.s3 + temp_a.s0 + temp_a.s1 + temp_a.s2 + temp_a.s3;
+#endif
 #endif
 }
