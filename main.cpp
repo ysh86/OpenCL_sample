@@ -108,7 +108,22 @@ main(void)
             std::make_pair(kernelStr.c_str(), kernelStr.length())
         );
         cl::Program program = cl::Program(context, sources);
-        err |= program.build("");
+        try {
+            err |= program.build("");
+        } catch (cl::Error err) {
+            std::cerr
+            << "ERROR: "
+            << err.what()
+            << "("
+            << err.err()
+            << ")"
+            << std::endl;
+
+            cl_int buildErr = CL_SUCCESS;
+            auto buildInfo = program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device, &buildErr);
+            std::cerr << buildInfo << std::endl;
+            return EXIT_FAILURE;
+        }
         cl::Kernel kernel(program, kernelName, &err);
 
         // Execution
