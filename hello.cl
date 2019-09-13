@@ -64,6 +64,8 @@ __kernel void hello(
 #else
     my4_t temp_a = {get_local_id(0), get_local_id(0)+1, get_local_id(0)+2, get_local_id(0)+3};
     my4_t temp_0 = {get_global_id(0), get_global_id(0)+1, get_global_id(0)+2, get_global_id(0)+3};
+    //my4_t temp_a = get_local_id(0);//{get_local_id(0), get_local_id(0)+1, get_local_id(0)+2, get_local_id(0)+3};
+    //my4_t temp_0 = get_global_id(0);//{get_global_id(0), get_global_id(0)+1, get_global_id(0)+2, get_global_id(0)+3};
 
     MAD_64(temp_a, temp_0);
     MAD_64(temp_a, temp_0);
@@ -83,6 +85,7 @@ __kernel void hello(
     MAD_64(temp_a, temp_0);
 
     c[gid] = temp_0.s0 + temp_0.s1 + temp_0.s2 + temp_0.s3 + temp_a.s0 + temp_a.s1 + temp_a.s2 + temp_a.s3;
+    //c[gid] = temp_0 + temp_a;
 #endif
 #endif
 }

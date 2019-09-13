@@ -153,6 +153,7 @@ main(void)
         }
         cl::finish();
 
+#if 1
         cl::Event event;
         err |= queue.enqueueNDRangeKernel(
             kernel,
@@ -169,6 +170,41 @@ main(void)
         cl_ulong end;
         err |= event.getProfilingInfo(CL_PROFILING_COMMAND_START, &start);
         err |= event.getProfilingInfo(CL_PROFILING_COMMAND_END, &end);
+#else
+        cl::Event eventS;
+        cl::Event eventE;
+        err |= queue.enqueueNDRangeKernel(
+            kernel,
+            cl::NullRange,
+            kernelRangeGlobal,
+            kernelRangeLocal,
+            NULL,
+            &eventS);
+        for (int i = 0; i < 98; ++i) {
+            err |= queue.enqueueNDRangeKernel(
+                kernel,
+                cl::NullRange,
+                kernelRangeGlobal,
+                kernelRangeLocal,
+                NULL,
+                NULL);
+        }
+        err |= queue.enqueueNDRangeKernel(
+            kernel,
+            cl::NullRange,
+            kernelRangeGlobal,
+            kernelRangeLocal,
+            NULL,
+            &eventE);
+        err |= eventE.wait();
+
+        // Profiling
+        // --------------------------------------------
+        cl_ulong start;
+        cl_ulong end;
+        err |= eventS.getProfilingInfo(CL_PROFILING_COMMAND_START, &start);
+        err |= eventE.getProfilingInfo(CL_PROFILING_COMMAND_END, &end);
+#endif
         std::cout
         << "Kernel "
         << kernelName
