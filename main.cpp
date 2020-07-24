@@ -6,9 +6,10 @@ x86_64-w64-mingw32-g++ -Wall -Werror --std=c++11 -O3 -msse2 \
 -static -lstdc++ -lgcc
 */
 
-#define __CL_ENABLE_EXCEPTIONS
-#define CL_TARGET_OPENCL_VERSION 120
-#include <CL/cl.hpp>
+#define CL_HPP_ENABLE_EXCEPTIONS
+#define CL_HPP_MINIMUM_OPENCL_VERSION 120
+#define CL_HPP_TARGET_OPENCL_VERSION 120
+#include <CL/cl2.hpp>
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
@@ -103,10 +104,7 @@ main(void)
         std::string kernelStr((std::istreambuf_iterator<char>(from)),
                                std::istreambuf_iterator<char>());
         from.close();
-        cl::Program::Sources sources(
-            1,
-            std::make_pair(kernelStr.c_str(), kernelStr.length())
-        );
+        cl::Program::Sources sources{kernelStr};
         cl::Program program = cl::Program(context, sources);
         try {
             err |= program.build("");
