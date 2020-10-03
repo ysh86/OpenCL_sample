@@ -1,14 +1,7 @@
-/*
-x86_64-w64-mingw32-g++ -Wall -Werror --std=c++11 -O3 -msse2 \
--o hello.exe ../main.cpp \
--I${HOME}/SDKs/OpenCL-Headers -I${HOME}/SDKs/OpenCL-CLHPP/build/include \
-/mnt/c/Windows/System32/OpenCL.DLL \
--static -lstdc++ -lgcc
-*/
-
-#define __CL_ENABLE_EXCEPTIONS
-#define CL_TARGET_OPENCL_VERSION 120
-#include <CL/cl.hpp>
+#define CL_HPP_ENABLE_EXCEPTIONS
+#define CL_HPP_MINIMUM_OPENCL_VERSION 120
+#define CL_HPP_TARGET_OPENCL_VERSION 120
+#include <CL/cl2.hpp>
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
@@ -23,7 +16,7 @@ const size_t height = 1024 * 2;
 const cl::NDRange kernelRangeGlobal(width * height, 1);
 const cl::NDRange kernelRangeLocal(256,1);
 
-#define kernelFile "../hello.cl"
+#define kernelFile "src/hello.cl"
 #define kernelName "hello"
 
 int
@@ -103,10 +96,7 @@ main(void)
         std::string kernelStr((std::istreambuf_iterator<char>(from)),
                                std::istreambuf_iterator<char>());
         from.close();
-        cl::Program::Sources sources(
-            1,
-            std::make_pair(kernelStr.c_str(), kernelStr.length())
-        );
+        cl::Program::Sources sources{kernelStr};
         cl::Program program = cl::Program(context, sources);
         try {
             err |= program.build("");
