@@ -100,7 +100,7 @@ main(void)
         cl::Program program = cl::Program(context, sources);
         try {
             err |= program.build("");
-        } catch (cl::Error err) {
+        } catch (cl::Error &err) {
             std::cerr
             << "ERROR: "
             << err.what()
@@ -167,7 +167,7 @@ main(void)
         << " [msec]"
         << std::endl;
     }
-    catch (cl::Error err) {
+    catch (cl::Error &err) {
         std::cerr 
         << "ERROR: "
         << err.what()
