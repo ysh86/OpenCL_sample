@@ -1,13 +1,15 @@
 #define CL_HPP_ENABLE_EXCEPTIONS
 #define CL_HPP_MINIMUM_OPENCL_VERSION 120
 #define CL_HPP_TARGET_OPENCL_VERSION 120
-#include <CL/cl2.hpp>
+#include <CL/opencl.hpp>
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
 #include <string>
 #include <fstream>
 #include <streambuf>
+
+constexpr size_t PLAT = 0;
 
 const size_t ch = 4;
 const size_t width = 1024;
@@ -53,7 +55,7 @@ main(void)
             std::cout << "Platform size 0\n";
             return -1;
         }
-        size_t i = 0;
+        size_t i = PLAT;
         cl::Platform &plat = platforms[i];
 
 
