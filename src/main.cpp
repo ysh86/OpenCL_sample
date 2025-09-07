@@ -120,6 +120,7 @@ main(void)
 
         // Execution
         // --------------------------------------------
+        size_t totalRequiredSize = width*ch*height * 3;
         cl::Buffer a(context, CL_MEM_READ_ONLY, width*ch*height);
         cl::Buffer b(context, CL_MEM_READ_ONLY, width*ch*height);
         cl::Buffer c(context, CL_MEM_WRITE_ONLY, width*ch*height);
@@ -161,16 +162,27 @@ main(void)
         cl_ulong end;
         err |= event.getProfilingInfo(CL_PROFILING_COMMAND_START, &start);
         err |= event.getProfilingInfo(CL_PROFILING_COMMAND_END, &end);
+        double elapsed_ms;
+        elapsed_ms = static_cast<double>(end - start) / 1000.0 / 1000.0;
+
         std::cout
+        << std::endl
         << "Kernel "
         << kernelName
-        << "(): "
-        << static_cast<double>(end - start) / 1000.0 / 1000.0
-        << " [msec]"
+        << "()"
+        << std::endl;
+
+        std::cout << "elapsed time [ms]: " << elapsed_ms << std::endl;
+        std::cout << "dev bandwidth [GB/s]: " << totalRequiredSize * (1000.0 / elapsed_ms) / 1000 / 1000 / 1000 << std::endl;
+        std::cout << "dev fma [GFLOPS]: " << (1000.0 / elapsed_ms) * 4/*vec4*/ * 2/*fma*/ * (64*16)/*num*/ * width*height / 1000 / 1000 / 1000 << std::endl;
+        std::cout << std::endl;
+
+        std::cout
+        << "done"
         << std::endl;
     }
     catch (cl::Error &err) {
-        std::cerr 
+        std::cerr
         << "ERROR: "
         << err.what()
         << "("
